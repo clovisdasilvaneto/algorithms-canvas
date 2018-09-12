@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>Document</title>
+	<style>
+		body {
+			margin: 0;
+		}
+	</style>
+</head>
+<body>
+	<canvas></canvas>
+	<script>
+		'use strict';
+
+		const canvas = document.querySelector('canvas');
+		const ctx = canvas.getContext('2d');
+		const height = canvas.height = window.innerHeight;
+		const width = canvas.width = window.innerWidth;
+		let numbers = [
+			{value: 2, marked: false},
+			{value: 5, marked: false},
+			{value: 7, marked: false},
+			{value: 9, marked: false},
+			{value: 10, marked: false},
+			{value: 1, marked: false},
+			{value: 4, marked: false},
+			{value: 3, marked: false},
+			{value: 6, marked: false},
+			{value: 8, marked: false},
+		];
+		const boxHeight = width / 20;
+		const boxWidth = width / 20;
+		const margin = 100;
+		const fontSize = 20;
+		const fontSettings = `${fontSize}px arial`;
+		const sizePosition = (fontSize / 2);
+
+		let frame = 0;
+		let i = 0;
+		let j = 0;
+		let moving;
+
+		const draw = () => {
+			clear();
+
+			if(frame >= 5) {
+				// sort(numbers);
+				const a = numbers[j];
+				const b = numbers[j+1];
+
+				if(moving) {
+					a.x = a.x + 10;
+					b.x = b.x - 10;
+
+					if(a.x >= a.endedPosition || b.x <= b.endedPosition) {
+						numbers[j] = b;
+						numbers[j+1] = a;
+						moving = false;
+
+						frame = 0;
+					}else {
+						numbers[j] = a;
+						numbers[j+1] = b;
+					}
+				}else {
+					if(a.value > b.value){
+						numbers[j].endedPosition = b.x;
+						numbers[j+1].endedPosition = a.x;
+						moving = true;
+					}else if(i < numbers.length) {
+						j = j + 1;
+
+						if(j >= numbers.length - i - 1) {
+							numbers[j].marked = true;
+							j = 0;
+							i++;
+						}
+					}else {
+						numbers[0].marked = true;
+					}
+				}
+			}else {
+				frame += 1;
+			}
+
+			numbers = renderNumbers(ctx);
+			
+			if(!numbers[0].marked) {
+				window.requestAnimationFrame(draw);
+			}else {
+				console.log('acabou')
+			}
+		}
+
+		const drawRect = (color, x, y, w, h) => {
+			ctx.fillStyle = color;
+			ctx.fillRect(x, y, w, h);
+		}
+
+		const clear = () =>  drawRect('#000', 0, 0, width, height);
+
+		const renderNumbers = ctx => numbers.map((number, index) => {
+			if(!number.x) {
+				number.x = ((width / 2) - (boxWidth / 2)) + (index * margin) - ((margin/2) - 5) * numbers.length;
+			}
+
+			const y = (height / 2) - (boxHeight / 2);
+			let textColor = 'red';
+			let boxColor = '#fff';
+
+			if(number.marked){
+				boxColor = 'green';
+				textColor = '#fff';
+			}
+
+			drawRect(boxColor, number.x, y, boxHeight, boxWidth);
+
+			ctx.font = fontSettings;
+			ctx.fillStyle = textColor;
+
+			ctx.fillText(number.value, number.x + (boxWidth / 2) - sizePosition + 4, y + (boxHeight / 2) + sizePosition - 2);
+
+			return number;
+		});
+
+		draw();
+
+		//Original sort
+		// const sort = arr => arr.reduce((prev, next, i, matriz0) => {
+		// 	for (let j = 0, tm2 = matriz0.length - i -1; j < tm2; j++) {
+		// 		if(matriz0[j] > matriz0[j+1]) {
+		// 			const temp = matriz0[j];
+		// 			matriz0[j] = matriz0[j+1];
+		// 			matriz0[j + 1] = temp;
+		// 		}
+		// 	}
+
+		// 	return matriz0;
+		// },[]);
+	</script>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>Document</title>
+	<style>
+		body {
+			margin: 0;
+		}
+	</style>
+</head>
+<body>
+	<canvas></canvas>
+
+	<script>
+		const canvas = document.querySelector('canvas');
+		const ctx = canvas.getContext('2d');
+		const height = canvas.height = window.innerHeight;
+		const width = canvas.width = window.innerWidth;
+		let sample = [
+			{value: 2, marked: false},
+			{value: 5, marked: false},
+			{value: 7, marked: false},
+			{value: 9, marked: false},
+			{value: 10, marked: false},
+			{value: 1, marked: false},
+			{value: 4, marked: false},
+			{value: 3, marked: false},
+			{value: 6, marked: false},
+			{value: 8, marked: false},
+		];
+		const boxHeight = width / 20;
+		const boxWidth = width / 20;
+		const margin = 20;
+		const fontSize = 20;
+		const fontSettings = `${fontSize}px arial`;
+		const sizePosition = (fontSize / 2);
+		let frames = 0;
+		let result = [];
+		let oldIndex = 0;
+
+		const clear = () => {
+			drawRect('#000', 0, 0, width, height)
+		}
+
+		const drawRect = (color, x, y, w, h) => {
+			ctx.fillStyle = color;
+			ctx.fillRect(x, y, w, h);
+		}
+
+		clear();
+
+		const draw = () => {
+			if(result.length == sample.length) return;
+			
+			if(frames > 10) {
+				clear();
+
+				const sampleCopy = [
+					...sample
+				];
+
+				let min;
+
+				for (let j = 0; j < sampleCopy.length; j++) {
+					const current = sampleCopy[j];
+
+					if((min && (min.value > current.value) && (!result.length || current.value > result[result.length-1]))) {
+						min = current;
+						oldIndex = j;
+					}
+
+					if(!min && (!result.length || (current.value > result[result.length-1]))) {
+						min = current;
+						oldIndex = j;
+					}
+				}
+				
+				result.push(min.value);
+
+				let oldValue = { 
+					...sampleCopy[result.length -1] 
+				};
+
+				sampleCopy[result.length -1].value = min.value;
+				sampleCopy[result.length -1].marked = true;
+				sampleCopy[oldIndex].value = oldValue.value;
+
+				sample = renderNumbers(sampleCopy);
+
+				frames = 0;
+			} else {
+				frames += 1;
+			}
+
+			window.requestAnimationFrame(draw);
+		};
+
+		const renderNumbers = arr => arr.map((current, index) => {
+			return renderBox(current, index);
+		})
+		
+		const renderBox = (number, index) => {
+			const x = index * (boxWidth + margin);
+			const y = (height / 2) - (boxHeight / 2);
+			let textColor = 'red';
+			let boxColor = '#fff';
+
+			if(!number.x && !number.y) {
+				number.x = x;
+				number.y = y;
+			}
+
+			if(number.marked){
+				boxColor = 'green';
+				textColor = '#fff';
+			}
+
+			drawRect(boxColor, x, y, boxHeight, boxWidth);
+
+			ctx.font = fontSettings;
+			ctx.fillStyle = textColor;
+
+			ctx.fillText(number.value, number.x + (boxWidth / 2) - 5, number.y + (boxHeight / 2) + 5);
+
+			return number;
+		}
+
+		window.requestAnimationFrame(draw);
+
+/*
+		const selectionSort = arr => arr.reduce((prev, next, index, original)=> {
+			let min;
+
+			for (let i = 0; i < original.length; i++) {
+				const current = original[i];
+
+				if((min && (min.value > current.value) && (!prev.length || current.value > prev[prev.length-1]))) {
+					min = current;
+				}
+
+				if(!min && (!prev.length || (current.value > prev[prev.length-1]))) {
+					min = current;
+				}
+			}
+
+			prev.push(min.value);
+
+			return prev;
+		}, []);
+
+		console.log(selectionSort(numbers)); */
+	</script>
+</body>
+</html>
